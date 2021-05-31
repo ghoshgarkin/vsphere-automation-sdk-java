@@ -19,12 +19,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import com.vmware.content.library.Item;
+import com.vmware.content.library.item.TransferEndpoint;
 import com.vmware.content.library.item.UpdateSession;
 import com.vmware.content.library.item.UpdateSessionModel;
 import com.vmware.content.library.item.updatesession.File;
@@ -99,6 +101,55 @@ public class ItemUploadHelper {
                 + libItemService.get(libItemId).getContentVersion());
     }
 
+    public static void performPull(UpdateSession uploadService,
+                                   File uploadFileService,
+                                   Item libItemService,
+                                   String libItemId,
+                                   List<String> fileNames,
+                                   List<String> fileLocations) throws URISyntaxException {
+
+        // create a new upload session for uploading the files
+        String sessionId = createUploadSession(uploadService, libItemService,
+                libItemId);
+
+        // add the files to the item and PUT the file to the transfer URL
+        pullFiles(uploadFileService, sessionId, fileNames, fileLocations);
+
+        // check if there were any invalid or missing files
+        List<ValidationError> invalidFiles =
+                uploadFileService.validate(sessionId).getInvalidFiles();
+        Set<String> missingFiles = uploadFileService.validate(sessionId)
+                .getMissingFiles();
+        System.out.println(
+                "UploadSession Info : " + uploadService.get(sessionId));
+        System.out.println("Invalid Files : " + invalidFiles);
+        System.out.println("Missing Files : " + missingFiles);
+        if (missingFiles.size() == 0 && invalidFiles.size() == 0) {
+            uploadService.complete(sessionId);
+            // Delete the update session once the upload is done to free up the
+            // session.
+            uploadService.delete(sessionId);
+        }
+        if (invalidFiles.size() != 0) {
+            uploadService.fail(sessionId,
+                    invalidFiles.get(0).getErrorMessage().toString());
+            uploadService.delete(sessionId);
+            System.out.println("Invalid files : " + invalidFiles);
+            throw new RuntimeException(invalidFiles.toString());
+        }
+        if (missingFiles.size() != 0) {
+            uploadService.cancel(sessionId);
+            System.out.println("Following files are missing : " + missingFiles);
+            throw new RuntimeException(
+                    "Missing the required files : " + missingFiles);
+        }
+
+        // verify that the content version number has incremented after the
+        // commit.
+        System.out.println("The Library Item version after the upload commit : "
+                + libItemService.get(libItemId).getContentVersion());
+    }
+
     /**
      * Creating a new upload session.
      *
@@ -137,6 +188,13 @@ public class ItemUploadHelper {
                     fileLocations.get(i));
         }
     }
+    private static void pullFiles(File uploadFileService, String sessionId,
+                                    List<String> fileNames, List<String> fileLocations) throws URISyntaxException {
+        assert fileNames.size() == fileLocations.size();
+        for (int i = 0; i < fileNames.size(); i++) {
+            uploadFilePull(uploadFileService, sessionId, fileNames.get(i), fileLocations.get(i));
+        }
+    }
 
     /**
      * Upload a file using upload session
@@ -153,6 +211,43 @@ public class ItemUploadHelper {
         AddSpec addSpec = new AddSpec();
         addSpec.setName(fileName);
         addSpec.setSourceType(SourceType.PUSH);
+        uploadFileService.add(sessionId, addSpec);
+
+        // Do a get on the file, verify the information is the same
+        com.vmware.content.library.item.updatesession.FileTypes.Info fileInfo =
+                uploadFileService.get(sessionId, fileName);
+
+        // Get the transfer uri.
+        URI transferUri = fileInfo.getUploadEndpoint().getUri();
+
+        System.out.println("File Location : " + fileLocation);
+        java.io.File file1 = new java.io.File(fileLocation);
+        System.out.println("File Name " + file1.getName());
+        try {
+            String transferUrl = transferUri.toURL().toString();
+            System.out.println("Upload/Transfer URL : " + transferUrl);
+            httpClient.upload(file1, transferUrl);
+
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Failed to upload due to IOException!",
+                    e);
+        }
+
+        // Verify that the file has been received
+        fileInfo = uploadFileService.get(sessionId, fileName);
+        return fileInfo;
+    }
+
+    public static Info uploadFilePull(File uploadFileService, String sessionId,
+                                  String fileName, String fileLocation) throws URISyntaxException {
+        HttpClient httpClient = new HttpClient(true);
+        // add the file spec to the upload file service
+        AddSpec addSpec = new AddSpec();
+        addSpec.setName(fileName);
+        addSpec.setSourceType(SourceType.PULL);
+        TransferEndpoint te = new TransferEndpoint();
+        te.setUri(new URI(fileLocation));
+        addSpec.setSourceEndpoint(te);
         uploadFileService.add(sessionId, addSpec);
 
         // Do a get on the file, verify the information is the same

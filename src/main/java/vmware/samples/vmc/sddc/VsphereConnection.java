@@ -123,6 +123,13 @@ public class VsphereConnection extends VmcSamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--refreshtoken", "6msCQY6s3exPdC2aPPLZMEKmvHMWSf0SZnfa9xjfte8qYtMdPb07IMuOt1SC8KMN",
+                "--org_id", "c5a81416-dc30-4a2e-83d2-3348a036de85",
+                "--sddc_id", "acdbb792-b751-44c6-955d-56540cae8796",
+                "--vmcserver", "vmc.vmware.com",
+                "--cspserver", "console.cloud.vmware.com"
+        };
         new VsphereConnection().execute(args);
     }
 }

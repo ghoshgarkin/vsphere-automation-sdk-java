@@ -13,6 +13,8 @@
 package vmware.samples.contentlibrary.contentupdate;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -124,7 +126,8 @@ public class ContentUpdate extends SamplesAbstractBase {
         // the session to finish the content update.
 
         // Create an OVF item and upload initial content.
-        this.ovfItemId = createOvfItem(libraryId);
+        //this.ovfItemId = createOvfItem(libraryId);
+        this.ovfItemId = createOvfItemPull(libraryId);
         ItemModel ovfItem = this.client.itemService().get(this.ovfItemId);
         String contentVersionBeforeUpdate = ovfItem.getContentVersion();
         System.out.println("OVF Library Item Created : " + this.ovfItemId
@@ -177,36 +180,36 @@ public class ContentUpdate extends SamplesAbstractBase {
 
         // Create a new ISO item in the content library and upload
         // the initial ISO file.
-        this.isoItemId = createIsoItem(libraryId);
-        ItemModel isoItem = this.client.itemService().get(this.isoItemId);
-        contentVersionBeforeUpdate = isoItem.getContentVersion();
-        System.out.println("ISO Library Item Created : " + this.isoItemId
-                           + ", content version: "
-                           + contentVersionBeforeUpdate);
-
-        // Replace the existing ISO file in the ISO item with a new ISO
-        // file with the same session file name via UpdateSession API.
-        updateSessionModel = new UpdateSessionModel();
-        updateSessionModel.setLibraryItemId(this.isoItemId);
-        sessionId = this.client.updateSession().create(null /* clientToken */,
-            updateSessionModel);
-
-        String isoFilePath =
-                getIsoFile(ISO_ITEM_FOLDER_NAME, ISO_ITEM_TWO_ISO_FILE_NAME);
-        ItemUploadHelper.uploadFile(this.client.updateSessionFileService(),
-            sessionId,
-            ISO_ITEM_ONE_ISO_FILE_NAME,
-            isoFilePath);
-
-        this.client.updateSession().complete(sessionId);
-
-        // Verify that item content version increases by one.
-        isoItem = this.client.itemService().get(this.isoItemId);
-        contentVersionAfterUpdate = isoItem.getContentVersion();
-        System.out.println("ISO Library Item Updated : " + this.isoItemId
-                           + ", content version: " + contentVersionAfterUpdate);
-        assert Integer.parseInt(contentVersionBeforeUpdate) + 1 == Integer
-            .parseInt(contentVersionAfterUpdate);
+//        this.isoItemId = createIsoItem(libraryId);
+//        ItemModel isoItem = this.client.itemService().get(this.isoItemId);
+//        contentVersionBeforeUpdate = isoItem.getContentVersion();
+//        System.out.println("ISO Library Item Created : " + this.isoItemId
+//                           + ", content version: "
+//                           + contentVersionBeforeUpdate);
+//
+//        // Replace the existing ISO file in the ISO item with a new ISO
+//        // file with the same session file name via UpdateSession API.
+//        updateSessionModel = new UpdateSessionModel();
+//        updateSessionModel.setLibraryItemId(this.isoItemId);
+//        sessionId = this.client.updateSession().create(null /* clientToken */,
+//            updateSessionModel);
+//
+//        String isoFilePath =
+//                getIsoFile(ISO_ITEM_FOLDER_NAME, ISO_ITEM_TWO_ISO_FILE_NAME);
+//        ItemUploadHelper.uploadFile(this.client.updateSessionFileService(),
+//            sessionId,
+//            ISO_ITEM_ONE_ISO_FILE_NAME,
+//            isoFilePath);
+//
+//        this.client.updateSession().complete(sessionId);
+//
+//        // Verify that item content version increases by one.
+//        isoItem = this.client.itemService().get(this.isoItemId);
+//        contentVersionAfterUpdate = isoItem.getContentVersion();
+//        System.out.println("ISO Library Item Updated : " + this.isoItemId
+//                           + ", content version: " + contentVersionAfterUpdate);
+//        assert Integer.parseInt(contentVersionBeforeUpdate) + 1 == Integer
+//            .parseInt(contentVersionAfterUpdate);
     }
 
     /**
@@ -248,6 +251,23 @@ public class ContentUpdate extends SamplesAbstractBase {
             this.client.itemService(),
             ovfLibItem.getId(),
             fileLocations);
+        assert ovfLibItem != null;
+        assert this.client.itemService().list(libraryId).size() > 0;
+        return ovfLibItem.getId();
+    }
+
+    private String createOvfItemPull(String libraryId) throws IOException, URISyntaxException {
+        ItemModel ovfLibItem =
+                createLibraryItem(libraryId, this.ovfItemName, OVF_ITEM_TYPE);
+        List<String> fileNames = Collections.singletonList("VMWare-Network-Insight-Collector.ova");
+        List<String> fileLocations =
+                Collections.singletonList("https://s3-us-west-2.amazonaws.com/vrni-packages-archive-symphony-stag/latest/VMWare-Network-Insight-Collector.ova");
+        ItemUploadHelper.performPull(this.client.updateSession(),
+                this.client.updateSessionFileService(),
+                this.client.itemService(),
+                ovfLibItem.getId(),
+                fileNames,
+                fileLocations);
         assert ovfLibItem != null;
         assert this.client.itemService().list(libraryId).size() > 0;
         return ovfLibItem.getId();
@@ -376,6 +396,13 @@ public class ContentUpdate extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--server", "vcenter.sddc-35-155-98-158.vmwarevmc.com",
+                "--username", "cloudadmin@vmc.local",
+                "--password", "u!JLSyv*7DKlI2a",
+                "--skip-server-verification", "true",
+                "--contentlibraryname", "vrniensemble"
+        };
         new ContentUpdate().execute(args);
     }
 }

@@ -249,6 +249,17 @@ public class DeployOvfTemplateVMC extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--server", "vcenter.sddc-35-155-98-158.vmwarevmc.com",
+                "--username", "cloudadmin@vmc.local",
+                "--password", "u!JLSyv*7DKlI2a",
+                "--skip-server-verification", "true",
+                "--vmname", "vrni-collector",
+                "--libitemname", "VMWare-Network-Insight-Collector",
+                "--resourcepoolname","Compute-ResourcePool",
+                "--opaquenetworkname","vrni-collector-segment"
+
+        };
         new DeployOvfTemplateVMC().execute(args);
     }
 }

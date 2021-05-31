@@ -125,6 +125,12 @@ public class ListVMs extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+
+        args = new String[]{
+                "--server", "10.182.53.156",
+                "--username", "administrator@vsphere.local",
+                "--password", "Admin!23",
+                "--skip-server-verification", "true"};
         new ListVMs().execute(args);
     }
 }

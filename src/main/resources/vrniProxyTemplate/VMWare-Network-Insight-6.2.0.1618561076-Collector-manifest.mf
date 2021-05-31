@@ -1,0 +1,2 @@
+SHA1(VMWare-Network-Insight-6.2.0.1618561076-Collector.ovf)= 5cbe54c117ed3dc2748bb13ab6c65c0ab3ecc697
+SHA1(VMWare-Network-Insight-6.2.0.1618561076-Collector-disk1.vmdk)= 624101675c62fb0facc7df7e7f2169814f2ed49d

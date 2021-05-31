@@ -308,8 +308,7 @@ public abstract class SamplesAbstractBase {
         this.sessionStubConfig =
                 vapiAuthHelper.loginByUsernameAndPassword(
                     this.server, this.username, this.password, httpConfig);
-        this.vimAuthHelper.loginByUsernameAndPassword(
-                    this.server, this.username, this.password);
+        this.vimAuthHelper.loginByUsernameAndPassword(this.server, this.username, this.password);
     }
 
     /**
@@ -408,7 +407,7 @@ public abstract class SamplesAbstractBase {
      */
     protected void logout() throws Exception {
         this.vapiAuthHelper.logout();
-        this.vimAuthHelper.logout();
+        //this.vimAuthHelper.logout();
     }
 
     /**

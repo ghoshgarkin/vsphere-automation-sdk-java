@@ -80,7 +80,7 @@ public class HttpClient {
                 public void checkClientTrusted(X509Certificate[] arg0,
                         String arg1) throws CertificateException {
                 }
-            } }, new SecureRandom());
+            } }, null);
 
             // Create a registry of custom connection socket factories for
             // supported protocol schemes
@@ -105,6 +105,7 @@ public class HttpClient {
             clientBuilder.setConnectionManager(connectionManager);
             clientBuilder.setDefaultRequestConfig(config);
 
+
             // build the HTTP client
             client = clientBuilder.build();
         } catch (NoSuchAlgorithmException e) {
@@ -116,6 +117,18 @@ public class HttpClient {
 
     public void upload(File file, String url) {
         upload(file, 0, file.length(), url, null);
+    }
+
+    public void upload(String url) throws IOException {
+        HttpPut httpPut = new HttpPut(url);
+        try {
+
+            HttpResponse httpResponse = executeRequest(httpPut);
+            validateResponse(httpResponse, HttpStatus.SC_OK);
+        }  catch (Exception e) {
+            httpPut.abort();
+            throw e;
+        }
     }
 
     public void upload(File file, long startByte, long endByte, String url,

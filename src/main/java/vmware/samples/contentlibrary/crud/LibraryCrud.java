@@ -83,6 +83,7 @@ public class LibraryCrud extends SamplesAbstractBase {
         // List of visible content libraries
         List<String> visibleCls = client.localLibraryService().list();
         System.out.println("All libraries : " + visibleCls);
+
         //Build the storage backing for the libraries to be created
         StorageBacking storageBacking = DatastoreHelper.createStorageBacking(
                 this.vapiAuthHelper, this.sessionStubConfig, this.dsName );
@@ -97,8 +98,7 @@ public class LibraryCrud extends SamplesAbstractBase {
 
         // Create a local content library backed the VC datastore using vAPIs
         String clientToken = UUID.randomUUID().toString();
-        String libraryId = this.client.localLibraryService()
-                                      .create(clientToken, createSpec);
+        String libraryId = this.client.localLibraryService().create(clientToken, createSpec);
         System.out.println("Local library created : " + libraryId);
 
         // Retrieve the local content library
@@ -132,6 +132,14 @@ public class LibraryCrud extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--server", "vcenter.sddc-35-155-98-158.vmwarevmc.com",
+                "--username", "cloudadmin@vmc.local",
+                "--password", "u!JLSyv*7DKlI2a",
+                "--skip-server-verification", "true",
+                "--contentlibraryname", "vrniensemble",
+                "--datastore", "WorkloadDatastore"
+        };
         new LibraryCrud().execute(args);
     }
 }

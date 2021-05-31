@@ -240,6 +240,16 @@ public class CreateBasicVM extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--server", "10.182.53.156",
+                "--username", "administrator@vsphere.local",
+                "--password", "Admin!23",
+                "--skip-server-verification", "true",
+                "--vmfolder", "gg-vms",
+                "--datastore", "gg-store",
+                "--datacenter", "gg-rnd",
+                "--standardportgroup", "VM Network"
+        };
         new CreateBasicVM().execute(args);
     }
 }

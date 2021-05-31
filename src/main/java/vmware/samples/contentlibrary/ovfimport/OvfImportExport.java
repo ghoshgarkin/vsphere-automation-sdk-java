@@ -39,9 +39,10 @@ import vmware.samples.contentlibrary.helpers.ItemUploadHelper;
 public class OvfImportExport extends SamplesAbstractBase {
 
     private String libName;
-    private String libFolderName = "simpleVmTemplate";
-    private String libItemName = "descriptor.ovf";
-    private String libVMDKName = "disk-0.vmdk";
+    private String libFolderName = "vrniProxyTemplate";
+    private String libItemName = "VMWare-Network-Insight-6.2.0.1618561076-Collector.ovf";
+    private String libVMDKName = "VMWare-Network-Insight-6.2.0.1618561076-Collector-disk1.vmdk";
+    private String libMfName = "VMWare-Network-Insight-6.2.0.1618561076-Collector-manifest.mf";
     private ClsApiClient client;
     private ItemModel libItem;
 
@@ -91,6 +92,8 @@ public class OvfImportExport extends SamplesAbstractBase {
                 libFolderName+"/"+libItemName, tempDir, libItemName);
         String vmdkFile = ItemUploadHelper.copyResourceToFile(
                 libFolderName+"/"+libVMDKName, tempDir, libVMDKName);
+        String mfFile = ItemUploadHelper.copyResourceToFile(
+                libFolderName+"/"+libMfName, tempDir, libVMDKName);
         System.out.println("OVF Path : " + ovfFile);
         System.out.println("VMDK Path : " + vmdkFile);
 
@@ -127,14 +130,14 @@ public class OvfImportExport extends SamplesAbstractBase {
             + this.client.storageService().list(this.libItem.getId()));
 
         // Download the template files from the library item into a folder
-        File downloadDir = ItemUploadHelper.createTempDir(libFolderName);
-        ItemDownloadHelper.performDownload(
-            this.client.downloadSessionService(),
-            this.client.downloadSessionFileService(),
-            this.client.itemService(),
-            this.libItem.getId(),
-            downloadDir);
-        System.out.println("Downloaded files to directory : " + downloadDir);
+//        File downloadDir = ItemUploadHelper.createTempDir(libFolderName);
+//        ItemDownloadHelper.performDownload(
+//            this.client.downloadSessionService(),
+//            this.client.downloadSessionFileService(),
+//            this.client.itemService(),
+//            this.libItem.getId(),
+//            downloadDir);
+//        System.out.println("Downloaded files to directory : " + downloadDir);
     }
 
     /**
@@ -143,9 +146,9 @@ public class OvfImportExport extends SamplesAbstractBase {
     protected void cleanup() {
         if (this.libItem != null) {
             // Delete the library item
-            this.client.itemService().delete(this.libItem.getId());
-            System.out.println("Deleted library item : "
-                + this.libItem.getId());
+//            this.client.itemService().delete(this.libItem.getId());
+//            System.out.println("Deleted library item : "
+//                + this.libItem.getId());
         }
     }
 
@@ -160,6 +163,13 @@ public class OvfImportExport extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--server", "vcenter.sddc-35-155-98-158.vmwarevmc.com",
+                "--username", "cloudadmin@vmc.local",
+                "--password", "u!JLSyv*7DKlI2a",
+                "--skip-server-verification", "true",
+                "--contentlibraryname", "vrniensemble"//,
+        };
         new OvfImportExport().execute(args);
     }
 }

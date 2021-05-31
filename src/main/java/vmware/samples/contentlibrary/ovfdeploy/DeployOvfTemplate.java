@@ -190,10 +190,9 @@ public class DeployOvfTemplate extends SamplesAbstractBase {
         deploymentSpec.setAcceptAllEULA(true);
         // Retrieve the library items OVF information and use it for populating
         // deployment spec.
-        OvfSummary ovfSummary = this.client.ovfLibraryItemService()
-            .filter(libItemId, deploymentTarget);
+         OvfSummary ovfSummary = this.client.ovfLibraryItemService().filter(libItemId, deploymentTarget);
         // Setting the annotation retrieved from the OVF summary.
-        deploymentSpec.setAnnotation(ovfSummary.getAnnotation());
+         deploymentSpec.setAnnotation(ovfSummary.getAnnotation());
         // Calling the deploy and getting the deployment result.
         DeploymentResult deploymentResult = this.client.ovfLibraryItemService()
             .deploy(UUID.randomUUID().toString(),
@@ -217,6 +216,15 @@ public class DeployOvfTemplate extends SamplesAbstractBase {
          * 5. Cleanup any data created by the sample run, if cleanup=true
          * 6. Logout of the server
          */
+        args = new String[]{
+                "--server", "10.182.53.156",
+                "--username", "administrator@vsphere.local",
+                "--password", "Admin!23",
+                "--skip-server-verification", "true",
+                "--vmname", "vrni-collector",
+                "--clustername", "vrnic",
+                "--libitemname", "VMWare-Network-Insight-Collector"
+        };
         new DeployOvfTemplate().execute(args);
     }
 }
